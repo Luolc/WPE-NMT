@@ -6,7 +6,8 @@ import re
 def process(src, dst, n_merges, verbose=False):
     out_stream = open(dst, 'w+')
 
-    sentences = get_sentences(src)
+    sentences = get_sentences(src.format('train'))
+    sentences += get_sentences(src.format('test'))
 
     stats, indices = get_pair_statistics(sentences)
     big_stats = copy.deepcopy(stats)
@@ -171,4 +172,4 @@ def update_pair_statistics(pair, changed, stats, indices):
 
 
 if __name__ == '__main__':
-    process('data/zh_en/tgt-train.txt', 'data/zh_en/tgt-train.wpe.txt', 100000, verbose=True)
+    process('data/zh_en/tgt-{}.small.txt', 'data/zh_en/small.wpe.txt', 50000, verbose=True)
