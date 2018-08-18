@@ -32,7 +32,7 @@ def build_trainer(opt, model, fields, optim, model_saver=None):
             used to save the model
     """
     report_manager = onmt.utils.build_report_manager(opt)
-    trainer = onmt.Trainer(model, fields, optim, report_manager, model_saver=model_saver)
+    trainer = Trainer(model, fields, optim, report_manager, model_saver=model_saver)
     return trainer
 
 

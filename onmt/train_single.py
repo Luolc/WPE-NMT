@@ -115,6 +115,7 @@ def main(opt):
     # Build model saver
     model_saver = build_model_saver(model_opt, opt, model, fields, optim)
 
+    # todo: notice this
     # original trainer
     # trainer = build_trainer(
     #     opt, model, fields, optim, data_type, model_saver=model_saver)
