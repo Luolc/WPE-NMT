@@ -15,7 +15,8 @@ from onmt.inputters.inputter import build_dataset_iter, lazily_load_dataset, \
     _load_fields, _collect_report_features
 from onmt.model_builder import build_model
 from onmt.utils.optimizers import build_optim
-from onmt.trainer import build_trainer
+# from onmt.trainer import build_trainer
+from onmt.wpe_trainer import build_trainer
 from onmt.models import build_model_saver
 from onmt.utils.logging import init_logger, logger
 
@@ -114,14 +115,21 @@ def main(opt):
     # Build model saver
     model_saver = build_model_saver(model_opt, opt, model, fields, optim)
 
+    # original trainer
+    # trainer = build_trainer(
+    #     opt, model, fields, optim, data_type, model_saver=model_saver)
+
+    # own trainer
     trainer = build_trainer(
-        opt, model, fields, optim, data_type, model_saver=model_saver)
+        opt, model, fields, optim, model_saver=model_saver)
 
-    def train_iter_fct(): return build_dataset_iter(
-        lazily_load_dataset("train", opt), fields, opt)
+    def train_iter_fct():
+        return build_dataset_iter(
+            lazily_load_dataset("train", opt), fields, opt)
 
-    def valid_iter_fct(): return build_dataset_iter(
-        lazily_load_dataset("valid", opt), fields, opt)
+    def valid_iter_fct():
+        return build_dataset_iter(
+            lazily_load_dataset("valid", opt), fields, opt)
 
     # Do training.
     trainer.train(train_iter_fct, valid_iter_fct, opt.train_steps,
