@@ -217,7 +217,12 @@ class StdRNNDecoder(RNNDecoderBase):
 
         # Initialize local and return variables.
         attns = {}
-        emb = self.embeddings(tgt)
+
+        if tgt.size(2) != self.embeddings.embedding_size:
+            emb = self.embeddings(tgt)
+        else:  # it is already an embedding
+            assert tgt.size(2) == self.embeddings.embedding_size
+            emb = tgt
 
         # Run the forward pass of the RNN.
         if isinstance(self.rnn, nn.GRU):
@@ -312,7 +317,11 @@ class InputFeedRNNDecoder(RNNDecoderBase):
         if self._coverage:
             attns["coverage"] = []
 
-        emb = self.embeddings(tgt)
+        if tgt.size(2) != self.embeddings.embedding_size:
+            emb = self.embeddings(tgt)
+        else:  # it is already an embedding
+            assert tgt.size(2) == self.embeddings.embedding_size
+            emb = tgt
         assert emb.dim() == 3  # len x batch x embedding_dim
 
         hidden = state.hidden

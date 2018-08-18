@@ -122,7 +122,7 @@ def main(opt):
 
     # own trainer
     trainer = build_trainer(
-        opt, model, fields, optim, model_saver=model_saver)
+        opt, model, fields, optim, opt.wpe_pair_size, model_saver=model_saver)
 
     def train_iter_fct():
         return build_dataset_iter(

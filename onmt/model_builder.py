@@ -193,7 +193,10 @@ def build_base_model(model_opt, fields, gpu, checkpoint=None):
 
     # Build NMTModel(= encoder + decoder).
     device = torch.device("cuda" if gpu else "cpu")
-    model = onmt.models.NMTModel(encoder, decoder)
+    if model_opt.wpe_pair_size != 0:
+        model = onmt.models.WPEModel(encoder, decoder, model_opt.wpe_pair_size)
+    else:
+        model = onmt.models.NMTModel(encoder, decoder)
     model.model_type = model_opt.model_type
 
     # Build Generator.

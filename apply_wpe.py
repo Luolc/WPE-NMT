@@ -7,6 +7,7 @@ def get_args():
 
     parser.add_argument('--data_path', type=str, default='data/zh_en/tgt-train.txt')
     parser.add_argument('--output_path', type=str, default='data/zh_en/tgt-train.merged.txt')
+    parser.add_argument('--flat_path', type=str, default='data/zh_en/tgt-train.flat.txt')
     parser.add_argument('--wpe_path', type=str, default='data/zh_en/tgt-train.wpe.txt')
     parser.add_argument('--n_merges', type=int, default=30000)
     parser.add_argument('--pair_size', type=int, default=3)
@@ -16,7 +17,7 @@ def get_args():
     return parser.parse_args()
 
 
-def apply(data_path, output_path, wpe_path, n_merges, pair_size=3, segment_size=-1, index=0):
+def apply(data_path, output_path, flat_path, wpe_path, n_merges, pair_size=3, segment_size=-1, index=0):
     wpes = get_wpes(wpe_path, n_merges, pair_size)
 
     with open(data_path, 'r') as f:
@@ -25,7 +26,7 @@ def apply(data_path, output_path, wpe_path, n_merges, pair_size=3, segment_size=
     if segment_size != -1:
         lines = lines[index * segment_size:index * segment_size + segment_size]
 
-    with open(output_path, 'w') as f:
+    with open(output_path, 'w') as output, open(flat_path, 'w') as flat:
         for line_index, line in enumerate(lines):
             tokens = tuple(line.split())
             pairs = [wpe for token in tokens for wpe in wpes[token]]
@@ -36,7 +37,18 @@ def apply(data_path, output_path, wpe_path, n_merges, pair_size=3, segment_size=
                 line = line.replace(raw, replacement)
 
             replaced = line.replace('<word>', '').replace('</word>', '')
-            f.write(replaced + '\n')
+            output.write(replaced + '\n')
+
+            flatten = []
+            for token in replaced.split():
+                if token.startswith('<sp>'):
+                    token = token[4:-5].split('$@$')
+                    token += ['<spad>'] * (pair_size - len(token))
+                    flatten += token
+                else:
+                    flatten.append('{} <spad> <spad>'.format(token))
+            flatten = '<sgo> <sgo> ' + ' '.join(flatten) + ' <seos> <seos>'
+            flat.write(flatten + '\n')
 
             if line_index % 2000 == 0:
                 print('Merged {} sentences'.format(line_index))
@@ -69,6 +81,7 @@ if __name__ == '__main__':
     args = get_args()
     apply(args.data_path,
           args.output_path,
+          args.flat_path,
           args.wpe_path,
           args.n_merges,
           args.pair_size,

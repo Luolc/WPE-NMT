@@ -19,7 +19,7 @@ import onmt.utils
 from onmt.utils.logging import logger
 
 
-def build_trainer(opt, model, fields, optim, model_saver=None):
+def build_trainer(opt, model, fields, optim, pair_size, model_saver=None):
     """
     Simplify `Trainer` creation based on user `opt`s*
 
@@ -28,11 +28,17 @@ def build_trainer(opt, model, fields, optim, model_saver=None):
         model (:obj:`onmt.models.NMTModel`): the model to train
         fields (dict): dict of fields
         optim (:obj:`onmt.utils.Optimizer`): optimizer used during training
+        pair_size
         model_saver(:obj:`onmt.models.ModelSaverBase`): the utility object
             used to save the model
     """
     report_manager = onmt.utils.build_report_manager(opt)
-    trainer = Trainer(model, fields, optim, report_manager, model_saver=model_saver)
+    trainer = Trainer(model,
+                      fields,
+                      optim,
+                      pair_size=pair_size,
+                      report_manager=report_manager,
+                      model_saver=model_saver)
     return trainer
 
 
@@ -52,11 +58,12 @@ class Trainer(object):
                 Thus nothing will be saved if this parameter is None
     """
 
-    def __init__(self, model, fields, optim, report_manager=None, model_saver=None):
+    def __init__(self, model, fields, optim, pair_size=0, report_manager=None, model_saver=None):
         # Basic attributes.
         self.model = model
         self.fields = fields
         self.optim = optim
+        self.pair_size = pair_size
         self.report_manager = report_manager
         self.model_saver = model_saver
 
@@ -131,7 +138,10 @@ class Trainer(object):
         scores = self.model.generator(outputs.view(-1, outputs.size(2)))
 
         # 3. Compute loss in shards for memory efficiency.
-        target = batch.tgt[1:batch.tgt.size(0)]
+        if self.pair_size != 0:
+            target = batch.tgt[self.pair_size:batch.tgt.size(0)]
+        else:
+            target = batch.tgt[1:batch.tgt.size(0)]
         gtruth = target.view(-1)
         loss = self.creterion(scores, gtruth)
         loss.div(float(normalization)).backward()
@@ -171,7 +181,10 @@ class Trainer(object):
 
             # Compute loss.
             scores = self.model.generator(outputs.view(-1, outputs.size(2)))
-            target = batch.tgt[1:batch.tgt.size(0)]
+            if self.pair_size != 0:
+                target = batch.tgt[self.pair_size:batch.tgt.size(0)]
+            else:
+                target = batch.tgt[1:batch.tgt.size(0)]
             gtruth = target.view(-1)
             loss = self.creterion(scores, gtruth)
             batch_stats = self._stats(loss.data.clone(), scores.data, target.view(-1).data)

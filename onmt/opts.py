@@ -11,6 +11,11 @@ def model_opts(parser):
     Be careful with these as they will be used during translation.
     """
 
+    # WPE
+    group = parser.add_argument_group('WPE')
+    group.add_argument('-wpe_pair_size', type=int, default=0,
+                       help='WPE pair size (not use if 0)')
+
     # Embedding Options
     group = parser.add_argument_group('Model-Embeddings')
     group.add_argument('-src_word_vec_size', type=int, default=500,
