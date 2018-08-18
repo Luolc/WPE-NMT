@@ -205,8 +205,6 @@ class Trainer(object):
         Returns:
             stat: the updated (or unchanged) stat object
         """
-        if stat is not None and self.n_gpu > 1:
-            return onmt.utils.Statistics.all_gather_stats(stat)
         return stat
 
     def _maybe_report_training(self, step, num_steps, learning_rate,
@@ -218,7 +216,7 @@ class Trainer(object):
         if self.report_manager is not None:
             return self.report_manager.report_training(
                 step, num_steps, learning_rate, report_stats,
-                multigpu=self.n_gpu > 1)
+                multigpu=False)
 
     def _report_step(self, learning_rate, step, train_stats=None,
                      valid_stats=None):
