@@ -52,10 +52,13 @@ def translate(opt):
 
     pair_size = model_opt.wpe_pair_size
     s_id = fields["tgt"].vocab.stoi['<s>']
-    ss_id = fields["tgt"].vocab.stoi['<sgo>']
+    if '<sgo>' in fields["tgt"].vocab.stoi:
+        ss_id = fields["tgt"].vocab.stoi['<sgo>']
+    else:
+        ss_id = fields['tgt'].vocab.stoi['<unk>']
 
     for i, batch in enumerate(data_iter):
-        tgt = torch.LongTensor([s_id] * batch_size + [ss_id] * (2 * batch_size)).view(
+        tgt = torch.LongTensor([s_id] * batch_size + [ss_id] * ((pair_size - 1) * batch_size)).view(
             pair_size, batch_size).unsqueeze(2).to(device)
         dec_state = None
         src = inputters.make_features(batch, 'src', 'text')

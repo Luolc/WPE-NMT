@@ -172,4 +172,4 @@ def update_pair_statistics(pair, changed, stats, indices):
 
 
 if __name__ == '__main__':
-    process('data/zh_en/tgt-{}.small.txt', 'data/zh_en/small.wpe.txt', 50000, verbose=True)
+    process('data/zh_en/tgt-{}.small.txt', 'data/zh_en/small2.wpe.txt', 100000, verbose=True)
