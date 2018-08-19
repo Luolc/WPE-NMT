@@ -72,7 +72,7 @@ def translate(opt):
             if result is None:
                 result = indices.view(pair_size, batch_size)
             else:
-                result = torch.concat([result, indices.view(pair_size, batch_size)], 0)
+                result = torch.cat([result, indices.view(pair_size, batch_size)], 0)
 
         result = result.transpose(0, 1).tolist()
         for sent in result:
