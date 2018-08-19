@@ -103,7 +103,8 @@ class WPEModel(nn.Module):
             self.decoder.init_decoder_state(src, memory_bank, enc_final)
 
         assert tgt.size(0) % 3 == 0
-        tgt = tgt[:-self.pair_size]  # exclude last pair from inputs
+        if tgt.size(0) > 3:
+            tgt = tgt[:-self.pair_size]  # exclude last pair from inputs
 
         emb = self.decoder.embeddings(tgt)
 
