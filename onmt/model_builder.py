@@ -235,6 +235,10 @@ def build_base_model(model_opt, fields, gpu, checkpoint=None):
             model.decoder.embeddings.load_pretrained_vectors(
                 model_opt.pre_word_vecs_dec, model_opt.fix_word_vecs_dec)
 
+        # todo: notice this
+        model.decoder.embeddings.word_lut.weight.data[
+            model.decoder.embeddings.word_padding_idx].zero_()
+
     # Add generator to model (this registers it as parameter of model).
     model.generator = generator
     model.to(device)

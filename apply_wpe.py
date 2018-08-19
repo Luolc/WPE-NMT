@@ -26,7 +26,7 @@ def apply(data_path, output_path, flat_path, wpe_path, n_merges, pair_size=3, se
     if segment_size != -1:
         lines = lines[index * segment_size:index * segment_size + segment_size]
 
-    with open(output_path, 'w') as output, open(flat_path, 'w') as flat:
+    with open(output_path, 'w+') as output, open(flat_path, 'w+') as flat:
         for line_index, line in enumerate(lines):
             tokens = tuple(line.split())
             pairs = [wpe for token in tokens for wpe in wpes[token]]
@@ -43,11 +43,13 @@ def apply(data_path, output_path, flat_path, wpe_path, n_merges, pair_size=3, se
             for token in replaced.split():
                 if token.startswith('<sp>'):
                     token = token[4:-5].split('$@$')
-                    token += ['<spad>'] * (pair_size - len(token))
+                    token += ['<blank>'] * (pair_size - len(token))
                     flatten += token
                 else:
-                    flatten.append('{} <spad> <spad>'.format(token))
-            flatten = '<sgo> <sgo> ' + ' '.join(flatten) + ' <seos> <seos>'
+                    token = [token] + ['<blank>'] * (pair_size - 1)
+                    flatten += token
+            flatten = ['<sgo>'] * (pair_size - 1) + flatten + ['<seos>'] * (pair_size - 1)
+            flatten = ' '.join(flatten)
             flat.write(flatten + '\n')
 
             if line_index % 2000 == 0:
