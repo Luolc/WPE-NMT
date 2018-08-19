@@ -51,11 +51,16 @@ def translate(opt):
         sort_within_batch=True, shuffle=False)
 
     pair_size = model_opt.wpe_pair_size
+
     s_id = fields["tgt"].vocab.stoi['<s>']
     if '<sgo>' in fields["tgt"].vocab.stoi:
         ss_id = fields["tgt"].vocab.stoi['<sgo>']
     else:
         ss_id = fields['tgt'].vocab.stoi['<unk>']
+    if '<seos>' in fields['tgt'].vocab.stoi:
+        eos_id = fields['tgt'].vocab.stoi['<seos>']
+    else:
+        eos_id = fields['tgt'].vocab.stoi['</s>']
 
     for i, batch in enumerate(data_iter):
         tgt = torch.LongTensor([s_id] * batch_size + [ss_id] * ((pair_size - 1) * batch_size)).view(
@@ -72,6 +77,10 @@ def translate(opt):
             indices = scores.argmax(dim=1)
             tgt = indices.view(pair_size, batch_size, 1)  # (pair_size x batch x feat)
 
+            assert batch_size == 1
+            if tgt[0][0][0].item() == eos_id:
+                break
+
             if result is None:
                 result = indices.view(pair_size, batch_size)
             else:
@@ -80,6 +89,7 @@ def translate(opt):
         result = result.transpose(0, 1).tolist()
         for sent in result:
             sent = [fields["tgt"].vocab.itos[_] for _ in sent]
+            sent = [_ for _ in sent if _ not in ['blank', '<seos>', '</s>']]
             sent = ' '.join(sent)
             out_file.write(sent + '\n')
 
