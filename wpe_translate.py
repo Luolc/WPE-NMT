@@ -89,7 +89,7 @@ def translate(opt):
         result = result.transpose(0, 1).tolist()
         for sent in result:
             sent = [fields["tgt"].vocab.itos[_] for _ in sent]
-            sent = [_ for _ in sent if _ not in ['blank', '<seos>', '</s>']]
+            sent = [_ for _ in sent if _ not in ['<blank>', '<seos>', '</s>']]
             sent = ' '.join(sent)
             out_file.write(sent + '\n')
 
