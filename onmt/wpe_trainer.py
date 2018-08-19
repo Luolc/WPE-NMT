@@ -11,6 +11,7 @@
 
 from __future__ import division
 
+import torch
 import torch.nn as nn
 
 import onmt.inputters as inputters
@@ -67,7 +68,12 @@ class Trainer(object):
         self.report_manager = report_manager
         self.model_saver = model_saver
 
-        self.creterion = nn.NLLLoss(size_average=False)  # todo: weight
+        cuda = next(model.parameters()).is_cuda
+        device = torch.device('cuda' if cuda else 'cpu')
+        vocab_size = model.decoder.embeddings.word_lut.num_embeddings
+        weight = torch.ones(vocab_size).to(device)
+        weight[model.decoder.embeddings.word_padding_idx] = 0.01
+        self.creterion = nn.NLLLoss(weight, size_average=False)  # todo: weight
 
         # Set model in training mode.
         self.model.train()
